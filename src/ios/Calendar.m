@@ -57,6 +57,26 @@
 
 #pragma mark Helper Functions
 
+- (BOOL)isAllDayEventFromStartDate:(NSDate *)startDate endDate:(NSDate *)endDate {
+  if ([startDate compare:endDate] != NSOrderedAscending) {
+    return NO;
+  }
+
+  NSCalendar *calendar = [NSCalendar currentCalendar];
+  return [[calendar startOfDayForDate:startDate] isEqualToDate:startDate]
+      && [[calendar startOfDayForDate:endDate] isEqualToDate:endDate];
+}
+
+- (void)setDatesForEvent:(EKEvent *)event startDate:(NSDate *)startDate endDate:(NSDate *)endDate {
+  event.startDate = startDate;
+  if ([self isAllDayEventFromStartDate:startDate endDate:endDate]) {
+    event.allDay = YES;
+    event.endDate = [endDate dateByAddingTimeInterval:-1];
+  } else {
+    event.endDate = endDate;
+  }
+}
+
 - (void) createEventWithCalendar:(CDVInvokedUrlCommand*)command
                        calendar: (EKCalendar *) calendar {
   NSDictionary* options = [command.arguments objectAtIndex:0];
@@ -79,16 +99,8 @@
     if (notes != (id)[NSNull null]) {
       myEvent.notes = notes;
     }
-    myEvent.startDate = myStartDate;
-
-    int duration = _endInterval - _startInterval;
-    int moduloDay = duration % (60 * 60 * 24);
-    if (moduloDay == 0) {
-      myEvent.allDay = YES;
-      myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval - 1];
-    } else {
-      myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
-    }
+    NSDate *myEndDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
+    [self setDatesForEvent:myEvent startDate:myStartDate endDate:myEndDate];
     myEvent.calendar = calendar;
 
     // if a custom reminder is required: use createCalendarWithOptions
@@ -597,16 +609,8 @@
     if (notes != (id)[NSNull null]) {
       myEvent.notes = notes;
     }
-    myEvent.startDate = myStartDate;
-
-    int duration = _endInterval - _startInterval;
-    int moduloDay = duration % (60*60*24);
-    if (moduloDay == 0) {
-      myEvent.allDay = YES;
-      myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval-1];
-    } else {
-      myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
-    }
+    NSDate *myEndDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
+    [self setDatesForEvent:myEvent startDate:myStartDate endDate:myEndDate];
 
     EKCalendar* calendar = nil;
     CDVPluginResult *pluginResult = nil;
@@ -706,14 +710,9 @@
   NSTimeInterval _endInterval = [endTime doubleValue] / 1000; // strip millis
     if (startTime != (id)[NSNull null]) {
       NSTimeInterval _startInterval = [startTime doubleValue] / 1000; // strip millis
-      int duration = _endInterval - _startInterval;
-      int moduloDay = duration % (60 * 60 * 24);
-      if (moduloDay == 0) {
-        myEvent.allDay = YES;
-        myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval - 1];
-      } else {
-        myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
-      }
+      NSDate *myStartDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
+      NSDate *myEndDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
+      [self setDatesForEvent:myEvent startDate:myStartDate endDate:myEndDate];
     } else {
       myEvent.endDate = [NSDate dateWithTimeIntervalSince1970:_endInterval];
     }
