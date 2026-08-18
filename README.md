@@ -8,6 +8,11 @@ This plugin allows you to add events to the Calendar of the mobile device.
 > [!NOTE]
 > This is a fork of the [Calendar-PhoneGap-Plugin](https://github.com/EddyVerbruggen/Calendar-PhoneGap-Plugin) by [EddyVerbruggen](https://github.com/EddyVerbruggen), which will continue the support of this plugin to the community. If you like, you can support me on my [GitHub Sponsor page](https://github.com/sponsors/GitToTheHub).
 
+## Supported platforms
+
+- Android
+- iOS
+
 ## iOS Specifics
 
 ### Calendar Usage Description
@@ -85,65 +90,59 @@ These methods are for handling a calendar itself and not the events on it.
 
 | Method | Support |
 | ---    | ---     |
-| [createCalendar](#create-calendar) | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| [deleteCalendar](#delete-calendar) | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| [listCalendars](#list-calendars) | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| [openCalendar](#open-calendar-app) | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
+| [createCalendar](#create-calendar) | Android, iOS |
+| [deleteCalendar](#delete-calendar) | Android, iOS |
+| [listCalendars](#list-calendars) | Android, iOS |
+| [openCalendar](#open-calendar-app) | Android, iOS |
 
 #### Create Calendar
 
 The `createCalendar` method will take as its first parameter a calender name or an options object.
 
-##### Create Calendar Just By Name
+If the calender did not already exist, the success callback will deliver the calendar id, which will be on Android an int like `1` or on iOS an UUID like `C50FED73-B77E-4DEF-91C2-5DA4E5191162`. If the calender already exists, the result will a string message like `OK, Calendar already exists` on iOS, or on Android it will be just `null`. 
+
+##### Create Calendar By Name
 
 ```js
-  window.plugins.calendar.createCalendar(
-    "My Calendar Name"
-    (result) => {
-      // If the calendar did not exists, the result will be the calendar id,
-      // otherwise it will contain the message "OK, Calendar already exists" on iOS and
-      // on Android it will be "null".
-      // On Android the calendar id will be an int like 1, on iOS it will return an UUID
-      // like "C50FED73-B77E-4DEF-91C2-5DA4E5191162"
-      console.log(`Calendar created, result=${result}`)
-    }),
-    (errorMessage)=> {
-      console.error(`Error creating calendar: ${errorMessage}`)
-    }))
+window.plugins.calendar.createCalendar(
+  "My Calendar Name",
+  (result) => {
+    console.log(`Calendar created, result=${result}`)
+  },
+  (errorMessage) => {
+    console.error(`Error creating calendar: ${errorMessage}`)
+  }
+)
 ```
 
 ##### Create Calendar By Options
 
 ```js
-  const createCalOptions = window.plugins.calendar.getCreateCalendarOptions()
-  // Android: Set the local account name where the local calendar is created under.
-  // If you don't set it, the app name will be used as account name.
-  createCalOptions.accountName = "My Account name"
-  // The calendar name, Android and iOS
-  createCalOptions.calendarName = "My Calendar Name"
-  // Optional, set the calendar color by a hex color like `#FF0000"`, default is null, so the OS picks a color.
-  createCalOptions.calendarColor = "#FF0000"
+const createCalOptions = window.plugins.calendar.getCreateCalendarOptions()
+// Android: Set the local account name where the local calendar
+// is created under. If you don't set it, the app name will be
+// used as account name.
+createCalOptions.accountName = "My Account name"
+// The calendar name, Android and iOS
+createCalOptions.calendarName = "My Calendar Name"
+// Optional, set the calendar color by a hex color like `#FF0000"`, default is null, so the OS picks a color.
+createCalOptions.calendarColor = "#FF0000"
 
-  // Create a calendar with options
-  window.plugins.calendar.createCalendar(
-    createCalOptions,
-    (result) => {
-      // If the calendar did not exists, the result will be the calendar id,
-      // otherwise it will contain the message "OK, Calendar already exists" on iOS and
-      // on Android it will be "null".
-      // On Android the calendar id will be an int like 1, on iOS it will return an UUID
-      // like "C50FED73-B77E-4DEF-91C2-5DA4E5191162"
-      console.log(`Calendar created, result=${result}`)
-    }),
-    (errorMessage)=> {
-      console.error(`Error creating calendar, errorMessage=${errorMessage}`);
-    }))
+// Create a calendar with options
+window.plugins.calendar.createCalendar(
+  createCalOptions,
+  (result) => {
+    console.log(`Calendar created, result=${result}`)
+  },
+  (errorMessage) => {
+    console.error(`Error creating calendar, errorMessage=${errorMessage}`);
+  }
+)
 ```
 
 ##### Android Specifics
 
-Under Android a local calendar will be created in a local account which geht not synced.
-The success callback will deliver the calendar id, which can be used on Android to create the event on it.
+On Android a local calendar will be created in a local account which get not synced and which is since 2025 not visible by default in the Google Calendar App. A user have to enable the local account, which Google calls a `non-Google account` in the settings of the app, see for this [Turn on a non-Google account](https://support.google.com/calendar/answer/13322290?sjid=17399977447742721718-EU#enable-non-google-account).
 
 #### Delete Calendar
 
@@ -155,204 +154,37 @@ window.plugins.calendar.deleteCalendar(
   },
   (errorMessage) => {
     console.log(`Error during deleting calendar, errorMessage=${errorMessage}`)
-  })
+  }
+)
 ```
 
 #### List Calendars
 
-Get a list of all calendars.
+Get a list of all calendars. The success callback returns an array of calendar objects.
 
 ```js
 window.plugins.calendar.listCalendars(
-  // The success callback will return an Array of calendar objects.
-  // A calendar object will be something like `{"id":"1", "name":"first"}`
+  // Success callback with an array of calendar objects.
   (calendars) => {
     console.log(`Successfully could get list of calendars, calendars=${JSON.stringify(calendars)}`)
   },
   (errorMessage) => {
     console.error(`Could not get list of calendars, errorMessage=${errorMessage}`)
-  })
-```
-
-#### Open Calendar App
-
-```js
-  // Opens it at 'today'
-  window.plugins.calendar.openCalendar()
-
-  // Opens it at a specific date, here today + 3 days
-  // Callbacks are optional
-  const date = new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000)
-  window.plugins.calendar.openCalendar(date, success, error)
-```
-
-### Event Methods
-
-These methods are for handling the calendar events.
-
-| Method | Support |
-| ---    | ---     |
-| createEvent                         | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| createEventWithOptions              | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| createEventInteractively            | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| createEventInteractivelyWithOptions | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| findEvent                           | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| findEventWithOptions                | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| listEventsInRange                   | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| findAllEventsInNamedCalendars       | <img src="images/apple-icon.svg" width="16"> |
-| modifyEvent                         | <img src="images/apple-icon.svg" width="16"> |
-| modifyEventWithOptions              | <img src="images/apple-icon.svg" width="16"> |
-| deleteEvent                         | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-| deleteEventFromNamedCalendar        | <img src="images/apple-icon.svg" width="16"> |
-| deleteEventById                     | <img src="images/apple-icon.svg" width="16"><img src="images/android-icon.svg" width="16"> |
-
-#### Examples
-
-```js
-  // Common successCallback for examples
-  const success = (response) => {
-    console.log(`Success, response=${JSON.stringify(response)}`);
   }
-
-  // Common errorCallback for examples
-  const error = (errorMessage) => {
-    console.error(`Error, errorMessage=${errorMessage}`);
-  }
-
-  // Prepare some variables for event creation
-  // Beware: First Month = 0, Last Month = 11
-  const startDate = new Date(2026, 8, 15, 18, 30, 0, 0, 0);
-  const endDate = new Date(2026, 8, 15, 19, 30, 0, 0, 0);
-  const title = "My nice event";
-  const eventLocation = "Home";
-  const notes = "Some notes about this event.";
-
-  // create an event silently
-  window.plugins.calendar.createEvent(
-    title, eventLocation, notes, startDate, endDate, success, error
-  );
-
-  // create an event silently with options:
-  const calOptions = window.plugins.calendar.getCalendarOptions(); // grab the defaults
-  calOptions.firstReminderMinutes = 120; // default is 60, pass in null for no reminder (alarm)
-  calOptions.secondReminderMinutes = 5;
-  calOptions.recurrence = "monthly"; // supported are: daily, weekly, monthly, yearly
-  calOptions.recurrenceInterval = 2; // once every 2 months in this case, default: 1
-  calOptions.recurrenceEndDate = new Date(2027,10,1,0,0,0,0,0); // leave null to add events into infinity and beyond
-  // Select calendar for the event. This differs on Android and iOS
-  // iOS: You can choose the calendar by name. If not set a default calendar will be used.
-  calOptions.calendarName = "My Calendar Name";
-  // Android: You have to set the calendar id, where to store the event. If not set, it defaults to 1 (what ever this will be).
-  // You get the calendar id, when you create a calendar in the success callback, otherwise you can use window.plugins.calendar.listCalendars
-  // to get a calendar id.
-  calOptions.calendarId = 1;
-
-  // And the URL can be passed (will be appended to the notes on Android as there doesn't seem to be a sep field)
-  calOptions.url = "https://www.google.com";
-
-  window.plugins.calendar.createEventWithOptions(
-    title, eventLocation, notes, startDate, endDate, calOptions,
-    (eventId) => {
-        // On Android this will be an int like `1`.
-        // On iOS this will be a calendar/event identifier string
-        // containing UUID segments like:
-        // `B12B87C3-6721-4FE7-AE1C-B71600B09AB7:9C9E6CF8-3335-4A7D-B81F-C0ED34B7B54D`
-        console.log(`Event created with options, eventId=${eventId}`);
-    },
-    (errorMessage) => {
-        console.error(`Error creating event with options, errorMessage=${errorMessage}`);
-    }
-  );
-
-  // create an event interactively
-  window.plugins.calendar.createEventInteractively(title, eventLocation, notes, startDate, endDate, success, error);
-
-  // create an event interactively with the calOptions object as shown above
-  window.plugins.calendar.createEventInteractivelyWithOptions(title, eventLocation, notes, startDate, endDate, calOptions, success, error);
-
-  // create an event in a named calendar (iOS only, deprecated, use createEventWithOptions instead)
-  window.plugins.calendar.createEventInNamedCalendar(title, eventLocation, notes, startDate, endDate, calendarName, success, error);
-
-  // find events (on iOS this includes a list of attendees (if any))
-  window.plugins.calendar.findEvent(title, eventLocation, notes, startDate, endDate, success, error);
-
-  // if you need to find events in a specific calendar, use this one. All options are currently ignored when finding events, except for the calendarName.
-  var calOptions = window.plugins.calendar.getCalendarOptions();
-  calOptions.calendarName = "My Calendar Name"; // iOS only
-  calOptions.id = "D9B1D85E-1182-458D-B110-4425F17819F1"; // if not found, we try matching against title, etc
-  window.plugins.calendar.findEventWithOptions(title, eventLocation, notes, startDate, endDate, calOptions, success, error);
-
-  // list all events in a date range (only supported on Android for now)
-  window.plugins.calendar.listEventsInRange(startDate, endDate, success, error);
-
-  // find all _future_ events in the first calendar with the specified name (iOS only for now, this includes a list of attendees (if any))
-  window.plugins.calendar.findAllEventsInNamedCalendar(calendarName, success, error);
-
-  // change an event (iOS only for now)
-  var newTitle = "New title!";
-  window.plugins.calendar.modifyEvent(title, eventLocation notes, startDate, endDate, newTitle, eventLocation, notes, startDate, endDate, success, error);
-
-  // or to add a reminder, make it recurring, change the calendar, or the url, use this one:
-  var filterOptions = window.plugins.calendar.getCalendarOptions(); // or {} or null for the defaults
-  filterOptions.calendarName = "My Calendar Name"; // iOS only
-  filterOptions.id = "D9B1D85E-1182-458D-B110-4425F17819F1"; // iOS only, get it from createEventWithOptions (if not found, we try matching against title, etc)
-  var newOptions = window.plugins.calendar.getCalendarOptions();
-  newOptions.calendaName = "My Changed Calendar Name"; // make sure this calendar exists before moving the event to it
-  // not passing in reminders will wipe them from the event. To wipe the default first reminder (60), set it to null.
-  newOptions.firstReminderMinutes = 120;
-  window.plugins.calendar.modifyEventWithOptions(title, eventLocation, notes, startDate, endDate, newTitle, eventLocation, notes, startDate, endDate, filterOptions, newOptions, success, error);
-
-  // delete an event (you can pass nulls for irrelevant parameters). The dates are mandatory and represent a date range to delete events in.
-  // note that on iOS there is a bug where the timespan must not be larger than 4 years, see issue 102 for details.. call this method multiple times if need be
-  // You can match events starting with a prefix title, so if your event title is 'My app - cool event' then 'My app -' will match.
-  window.plugins.calendar.deleteEvent(newTitle, eventLocation, notes, startDate, endDate, success, error);
-
-  // delete an event, as above, but for a specific calendar (iOS only)
-  window.plugins.calendar.deleteEventFromNamedCalendar(newTitle, eventLocation, notes, startDate, endDate, calendarName, success, error);
-
-  // Delete an event by id.
-  // fromDate is optional and can be null. If the event has recurring instances,
-  // all will be deleted unless fromDate is specified, which will
-  // delete from that date onward.
-  window.plugins.calendar.deleteEventById(
-    eventId,
-    fromDate,
-    success, error
-  );
+)
 ```
 
-Creating an all day event
+A calendar object contains these properties:
 
-```js
-// set the startdate to midnight and set the enddate to midnight the next day
-const startDate = new Date(2027, 2, 15, 0, 0, 0, 0, 0)
-const endDate = new Date(2027, 2, 16, 0, 0, 0, 0, 0)
-```
+| Property | Support | Description |
+| --- | --- | --- |
+| `id` | Android, iOS | Calendar identifier. On Android this is a numeric string like `"1"`. On iOS this is a UUID string. |
+| `name` | Android, iOS | Calendar name. |
+| `displayname` | Android | Calendar display name. |
+| `isPrimary` | Android | Whether this is the primary calendar. |
+| `type` | iOS | Calendar type, for example `Local`, `CalDAV`, `Exchange`, `Subscription`, `Birthday`, or `Mail`. |
 
-Creating an event for 3 full days
-
-```js
-// set the startdate to midnight and set the enddate to midnight 3 days later
-const startDate = new Date(2027, 2, 24, 0, 0, 0, 0, 0)
-const endDate = new Date(2027, 2, 27, 0, 0, 0, 0, 0)
-```
-
-Example Response IOS getCalendarOptions
-
-```js
-{
-  calendarId: null,
-  calendarName: "calendar",
-  firstReminderMinutes: 60,
-  recurrence: null,
-  recurrenceEndDate: null,
-  recurrenceInterval: 1,
-  secondReminderMinutes: null,
-  url: null
-}
-```
-
-Example Response IOS Calendars
+Example calendar object on iOS:
 
 ```js
 {
@@ -362,7 +194,405 @@ Example Response IOS Calendars
 }
 ```
 
-Example Response IOS Event
+#### Open Calendar App
+
+You can open the calendar app by calling `openCalendar`. Calling it will no parameter will open it at today:
+
+```js
+window.plugins.calendar.openCalendar()
+```
+
+You can open the calendar app at a specific date. The success and error callback are optional.
+
+```js
+// Open the calendar app at a specific date, here today + 3 days
+const date = new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000)
+window.plugins.calendar.openCalendar(
+  date,
+  () => {
+    console.log(`Calenar app sucessfully opened`)
+  },
+  (errorMessage) => {
+    console.error(`Could not open calendar app, errorMessage=${errorMessage}`)
+  }
+)
+```
+
+### Event Methods
+
+These methods are for handling the calendar events.
+
+| Method | Support |
+| ---    | ---     |
+| [getCalendarOptions](#get-calendar-options) | Android, iOS |
+| [createEvent](#create-event-without-options) | Android, iOS |
+| [createEventWithOptions](#create-event-with-options) | Android, iOS |
+| [createEventInteractively](#create-event-interactively) | Android, iOS |
+| [createEventInteractivelyWithOptions](#create-event-interactively-with-options) | Android, iOS |
+| [findEvent](#find-event) | Android, iOS |
+| [findEventWithOptions](#find-event-with-options) | Android, iOS |
+| [listEventsInRange](#list-events-in-range) | Android, iOS |
+| [findAllEventsInNamedCalendar](#find-all-events-in-named-calendar) | iOS |
+| [modifyEvent](#modify-event) | iOS |
+| [modifyEventWithOptions](#modify-event-with-options) | iOS |
+| [deleteEvent](#delete-event) | Android, iOS |
+| [deleteEventFromNamedCalendar](#delete-event-from-named-calendar) | iOS |
+| [deleteEventById](#delete-event-by-id) | Android, iOS |
+
+#### Create event
+
+There a two methods for creating an event: `createEvent` and `createEventWithOptions`. You should prefer using `createEventWithOptions` where you can choose the calendar where the events should be created. On `createEvent` you cannot choose the calendar and defaults will be used.
+
+The success callback of the create event methods will deliver the event id. On Android this will be an int like `1`. On iOS this will be a calendar/event identifier string containing UUID segments like `B12B87C3-6721-4FE7-AE1C-B71600B09AB7:9C9E6CF8-3335-4A7D-B81F-C0ED34B7B54D`.
+
+##### Create Event Without Options
+
+Calling `createEvent` will choose a default calendar where the event will be created which can lead to unspecific behaviour, prefere using [createEventWithOptions](#create-event-with-options).
+
+```js
+window.plugins.calendar.createEvent(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  // Note: On JavaScript, the first Month starts at 0, the last month ends at 11.
+  // So 7 means August, not July
+  new Date(2026, 7, 15, 18, 30, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 15, 19, 30, 0, 0, 0),
+  (eventId) => {
+    console.log(`Event created, eventId=${eventId}`)
+  },
+  (errorMessage) => {
+    console.error(`Error creating event, errorMessage=${errorMessage}`);
+  }
+);
+```
+
+##### Create Event With Options
+
+`createEventWithOptions` will let you choose the calendar where the event will be created. You have to create an options object by [`getCalendarOptions`](#get-calendar-options) where you can set more options for the event, for e.g. you can set the calendar where the event should be created on.
+
+```js
+// Create the options object first
+const options = window.plugins.calendar.getCalendarOptions();
+// Modify the options object
+// Example: Change the first reminder from 1 hour to 2 hours before
+options.firstReminderMinutes = 120;
+// Set calender name which applies only on iOS
+options.calendarName = "My Calendar Name";
+// Set calendar id which applies only on Android
+options.calendarId = 1;
+
+window.plugins.calendar.createEventWithOptions(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  // Note: On JavaScript, the first Month starts at 0, the last month
+  // ends at 11. So 7 means August, not July
+  new Date(2026, 7, 15, 18, 30, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 15, 19, 30, 0, 0, 0),
+  // Add here your options you created by `getCalendarOptions`
+  options,
+  (eventId) => {
+    console.log(`Event created, eventId=${eventId}`)
+  },
+  (errorMessage) => {
+    console.error(`Error creating event, errorMessage=${errorMessage}`);
+  }
+);
+```
+
+##### Create All-Day Event
+
+On iOS, an event is treated as all-day when the date range covers full days from midnight to midnight. On Android, set `options.allday = true`; for silent event creation Android also checks that the event duration is a whole number of days. Use midnight-to-midnight dates to avoid timezone surprises.
+
+```js
+// Set the start date to midnight and the end date to midnight the next day.
+const startDate = new Date(2027, 2, 15, 0, 0, 0, 0, 0)
+const endDate = new Date(2027, 2, 16, 0, 0, 0, 0, 0)
+
+const options = window.plugins.calendar.getCalendarOptions()
+// Android only: mark this event as all-day.
+options.allday = true
+
+window.plugins.calendar.createEventWithOptions(
+  "My all-day event",
+  "Home",
+  "Some notes about this event.",
+  startDate,
+  endDate,
+  options,
+  () => {
+    console.log("All-day event created")
+  },
+  (errorMessage) => {
+    console.error(`Error creating all-day event, errorMessage=${errorMessage}`)
+  }
+)
+```
+
+##### Create Multi-Day All-Day Event
+
+```js
+// Set the start date to midnight and the end date to midnight 3 days later.
+const startDate = new Date(2027, 2, 24, 0, 0, 0, 0, 0)
+const endDate = new Date(2027, 2, 27, 0, 0, 0, 0, 0)
+
+const options = window.plugins.calendar.getCalendarOptions()
+// Android only: mark this event as all-day.
+options.allday = true
+
+window.plugins.calendar.createEventWithOptions(
+  "My 3-day event",
+  "Home",
+  "Some notes about this event.",
+  startDate,
+  endDate,
+  options,
+  () => {
+    console.log("3-day event created")
+  },
+  (errorMessage) => {
+    console.error(`Error creating 3-day event, errorMessage=${errorMessage}`)
+  }
+)
+```
+
+##### Get Calendar Options
+
+`getCalendarOptions` returns the default options object used by the event methods that accept options:
+
+- `createEventWithOptions`
+- `createEventInteractivelyWithOptions`
+- `findEventWithOptions`
+- `modifyEventWithOptions`
+
+Start with this object and override only the properties you need. The JavaScript wrapper merges your options with these defaults before sending them to the native platform code. Not every method and platform uses every property: most properties configure event creation, while `findEventWithOptions` only uses event id and calendar filtering options and `modifyEventWithOptions` uses one options object to find the existing event and another options object for the new event values.
+
+`getCalendarOptions` returns these properties:
+
+| Property | Default | Support | Description |
+| --- | --- | --- | --- |
+| `firstReminderMinutes` | `60` | Android, iOS | Adds the first reminder this many minutes before the event. Set to `null` to disable it. Not supported by Android's interactive event editor. |
+| `secondReminderMinutes` | `null` | Android, iOS | Adds a second reminder this many minutes before the event. Not supported by Android's interactive event editor. |
+| `recurrence` | `null` | Android, iOS | Makes the event recurring. Supported values are `daily`, `weekly`, `monthly`, and `yearly`. |
+| `recurrenceInterval` | `1` | Android, iOS | Repeat interval for `recurrence`, for example `2` with `monthly` means every 2 months. |
+| `recurrenceWeekstart` | `"MO"` | Android only | RRULE `WKST` value, for example `MO` or `SU`. Supported by silent event creation only. |
+| `recurrenceByDay` | `null` | Android only | RRULE `BYDAY` value, for example `MO,WE,FR`. Supported by silent event creation only. |
+| `recurrenceByMonthDay` | `null` | Android only | RRULE `BYMONTHDAY` value, for example `15`. Supported by silent event creation only. |
+| `recurrenceEndDate` | `null` | Android, iOS | JavaScript `Date` at which the recurrence ends. Leave `null` for no end date. |
+| `recurrenceCount` | `null` | Android only | RRULE `COUNT` value, for example `5` to repeat 5 times. Supported by silent event creation only. |
+| `allday` | `null` | Android only | Set to `true` for an all-day event. For silent event creation, Android also checks that the event duration is a whole number of days. Use midnight-to-midnight dates to avoid timezone surprises. iOS ignores this option and detects all-day events from the date range. |
+| `calendarName` | `null` | iOS | Selects the calendar by name or identifier. If omitted, iOS uses the default calendar for new events. Android ignores this for event creation. |
+| `calendarId` | `null` | Android | Selects the Android calendar id. If omitted during event creation, Android defaults to `1`. iOS ignores this. |
+| `url` | `null` | Android, iOS | Adds a URL to the event. iOS stores it as the event URL. Android appends it to the event notes because Android calendar events do not expose the same URL field. |
+
+Example response from `getCalendarOptions`:
+
+```js
+{
+  firstReminderMinutes: 60,
+  secondReminderMinutes: null,
+  recurrence: null,
+  recurrenceInterval: 1,
+  recurrenceWeekstart: "MO",
+  recurrenceByDay: null,
+  recurrenceByMonthDay: null,
+  recurrenceEndDate: null,
+  recurrenceCount: null,
+  allday: null,
+  calendarName: null,
+  calendarId: null,
+  url: null
+}
+```
+
+##### Create Event Interactively
+
+`createEventInteractively` opens the native calendar UI with the event fields prefilled. The user can review, change, save, or cancel the event in the calendar UI.
+
+```js
+window.plugins.calendar.createEventInteractively(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  new Date(2026, 7, 15, 18, 30, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 15, 19, 30, 0, 0, 0),
+  // Success callback
+  (result) => {
+    console.log(`Event UI closed, result=${result}`)
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error creating event interactively, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Create Event Interactively With Options
+
+`createEventInteractivelyWithOptions` opens the native calendar UI with the event fields and an options object created by [`getCalendarOptions`](#get-calendar-options). Some options are platform-specific or ignored by Android's interactive event editor; see the `getCalendarOptions` table for details.
+
+```js
+// Create the options object first
+const options = window.plugins.calendar.getCalendarOptions();
+// iOS: select calendar by name
+options.calendarName = "My Calendar Name"; // iOS
+// Android: select calendar by id
+options.calendarId = 1; // Android
+// Add a URL to the event
+options.url = "https://www.google.com";
+
+window.plugins.calendar.createEventInteractivelyWithOptions(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  new Date(2026, 7, 15, 18, 30, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 15, 19, 30, 0, 0, 0),
+  // Options created by getCalendarOptions
+  options,
+  // Success callback
+  (result) => {
+    console.log(`Event UI closed, result=${result}`)
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error creating event interactively, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Create Event In Named Calendar
+
+`createEventInNamedCalendar` creates an event in a named iOS calendar. This method is deprecated; use [`createEventWithOptions`](#create-event-with-options) with `options.calendarName` instead.
+
+```js
+window.plugins.calendar.createEventInNamedCalendar(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  new Date(2026, 7, 15, 18, 30, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 15, 19, 30, 0, 0, 0),
+  // Calendar name
+  "My Calendar Name",
+  // Success callback
+  (eventId) => {
+    console.log(`Event created, eventId=${eventId}`)
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error creating event, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Find Event
+
+`findEvent` searches events by title, location, notes, start date, and end date. The success callback receives an array of matching events.
+
+```js
+window.plugins.calendar.findEvent(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  new Date(2026, 7, 15, 0, 0, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 16, 0, 0, 0, 0, 0),
+  // Success callback
+  (events) => {
+    console.log(`Found events, events=${JSON.stringify(events)}`)
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error finding events, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Find Event With Options
+
+`findEventWithOptions` searches events with an options object created by [`getCalendarOptions`](#get-calendar-options). On iOS, `options.id` can search by event id and `options.calendarName` limits the search to one calendar. On Android, `options.id` can search by event id and `options.calendarId` limits the search to one calendar.
+
+```js
+// Create the options object first
+const options = window.plugins.calendar.getCalendarOptions();
+// iOS: limit search to this calendar
+options.calendarName = "My Calendar Name"; // iOS
+// Android: limit search to this calendar id
+options.calendarId = 1; // Android
+// Optional event id filter
+options.id = "D9B1D85E-1182-458D-B110-4425F17819F1"; // optional
+
+window.plugins.calendar.findEventWithOptions(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  new Date(2026, 7, 15, 0, 0, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 16, 0, 0, 0, 0, 0),
+  // Options created by getCalendarOptions
+  options,
+  // Success callback
+  (events) => {
+    console.log(`Found events, events=${JSON.stringify(events)}`)
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error finding events, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+The success callback of `findEvent`, `findEventWithOptions`, and `findAllEventsInNamedCalendar` returns an array of event objects.
+
+An iOS event object can contain these properties:
+
+| Property | Description |
+| --- | --- |
+| `id` | Event identifier. |
+| `calendar` | Calendar name. |
+| `title` | Event title. |
+| `location` | Event location, when set. |
+| `message` | Event notes, when set. |
+| `startDate` | Event start date formatted as `yyyy-MM-dd HH:mm:ss`. |
+| `endDate` | Event end date formatted as `yyyy-MM-dd HH:mm:ss`. |
+| `lastModifiedDate` | Last modification date formatted as `yyyy-MM-dd HH:mm:ss`. |
+| `attendees` | Attendee objects, when available. |
+| `rrule` | Recurrence rule object, when available. |
+
+Example event object on iOS:
 
 ```js
 {
@@ -377,6 +607,215 @@ Example Response IOS Event
 }
 ```
 
+##### List Events In Range
+
+`listEventsInRange` returns all events in the given date range.
+
+```js
+window.plugins.calendar.listEventsInRange(
+  // Start date
+  new Date(2026, 7, 15, 0, 0, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 16, 0, 0, 0, 0, 0),
+  // Success callback
+  (events) => {
+    console.log(`Events in range, events=${JSON.stringify(events)}`)
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error listing events, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Find All Events In Named Calendar
+
+`findAllEventsInNamedCalendar` finds all future events in the first iOS calendar with the given name.
+
+```js
+window.plugins.calendar.findAllEventsInNamedCalendar(
+  // Calendar name
+  "My Calendar Name",
+  // Success callback
+  (events) => {
+    console.log(`Events in calendar, events=${JSON.stringify(events)}`)
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error finding events, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Modify Event
+
+`modifyEvent` changes the first event matching the original title, location, notes, start date, and end date. This method is iOS only.
+
+```js
+window.plugins.calendar.modifyEvent(
+  // Title of the event to modify
+  "My nice event",
+  // Location of the event to modify
+  "Home",
+  // Notes of the event to modify
+  "Some notes about this event.",
+  // Start date of the event to modify
+  new Date(2026, 7, 15, 18, 30, 0, 0, 0),
+  // End date of the event to modify
+  new Date(2026, 7, 15, 19, 30, 0, 0, 0),
+  // New title
+  "My changed event",
+  // New location
+  "Office",
+  // New notes
+  "Some changed notes.",
+  // New start date
+  new Date(2026, 7, 15, 20, 0, 0, 0, 0),
+  // New end date
+  new Date(2026, 7, 15, 21, 0, 0, 0, 0),
+  // Success callback
+  () => {
+    console.log("Event modified")
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error modifying event, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Modify Event With Options
+
+`modifyEventWithOptions` changes the first event matching the original event fields and `options`. Use `newOptions` to set the changed calendar, reminders, recurrence, or URL. This method is iOS only.
+
+```js
+// Options used to find the existing event
+const options = window.plugins.calendar.getCalendarOptions();
+// Calendar containing the existing event
+options.calendarName = "My Calendar Name";
+// Optional event id filter
+options.id = "D9B1D85E-1182-458D-B110-4425F17819F1"; // optional
+
+// Options used for the modified event
+const newOptions = window.plugins.calendar.getCalendarOptions();
+// Calendar where the modified event should be stored
+newOptions.calendarName = "My Changed Calendar Name";
+// New first reminder in minutes before the event
+newOptions.firstReminderMinutes = 120;
+
+window.plugins.calendar.modifyEventWithOptions(
+  // Title of the event to modify
+  "My nice event",
+  // Location of the event to modify
+  "Home",
+  // Notes of the event to modify
+  "Some notes about this event.",
+  // Start date of the event to modify
+  new Date(2026, 7, 15, 18, 30, 0, 0, 0),
+  // End date of the event to modify
+  new Date(2026, 7, 15, 19, 30, 0, 0, 0),
+  // New title
+  "My changed event",
+  // New location
+  "Office",
+  // New notes
+  "Some changed notes.",
+  // New start date
+  new Date(2026, 7, 15, 20, 0, 0, 0, 0),
+  // New end date
+  new Date(2026, 7, 15, 21, 0, 0, 0, 0),
+  // Options used to find the existing event
+  options,
+  // Options used for the modified event
+  newOptions,
+  // Success callback
+  () => {
+    console.log("Event modified")
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error modifying event, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Delete Event
+
+`deleteEvent` deletes matching events in the given date range. You can pass `null` for title, location, or notes when they should not be used for matching. The dates are mandatory.
+
+```js
+window.plugins.calendar.deleteEvent(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  new Date(2026, 7, 15, 0, 0, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 16, 0, 0, 0, 0, 0),
+  // Success callback
+  () => {
+    console.log("Event deleted")
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error deleting event, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Delete Event From Named Calendar
+
+`deleteEventFromNamedCalendar` deletes matching events from a specific iOS calendar. This method is iOS only.
+
+```js
+window.plugins.calendar.deleteEventFromNamedCalendar(
+  // Title
+  "My nice event",
+  // Event location
+  "Home",
+  // Notes
+  "Some notes about this event.",
+  // Start date
+  new Date(2026, 7, 15, 0, 0, 0, 0, 0),
+  // End date
+  new Date(2026, 7, 16, 0, 0, 0, 0, 0),
+  // Calendar name
+  "My Calendar Name",
+  // Success callback
+  () => {
+    console.log("Event deleted")
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error deleting event, errorMessage=${errorMessage}`)
+  }
+);
+```
+
+##### Delete Event By Id
+
+`deleteEventById` deletes an event by id. `fromDate` is optional and can be `null`. If the event is recurring, all future instances are deleted unless `fromDate` is set; then deletion starts from that date.
+
+```js
+window.plugins.calendar.deleteEventById(
+  // Event id
+  "D9B1D85E-1182-458D-B110-4425F17819F1",
+  // Optional start date for recurring event deletion
+  null,
+  // Success callback
+  () => {
+    console.log("Event deleted")
+  },
+  // Error callback
+  (errorMessage) => {
+    console.error(`Error deleting event, errorMessage=${errorMessage}`)
+  }
+);
+```
+
 ## Promises
 
 If you like to use promises instead of callbacks, or struggle to create a lot of
@@ -386,7 +825,7 @@ this plugin. Kudos to [John Rodney](https://github.com/JohnRodney) for this piec
 
 ## Credits
 
-This plugin was enhanced for Plugman / PhoneGap Build by [Eddy Verbruggen](http://www.x-services.nl). I fixed some issues in the native code (mainly for iOS) and changed the JS-Native functions a little in order to make a universal JS API for both platforms.
+This plugin was enhanced for Plugman / PhoneGap Build by [Eddy Verbruggen](http://www.x-services.nl). He fixed some issues in the native code (mainly for iOS) and changed the JS-Native functions a little in order to make a universal JS API for both platforms.
 * Inspired by [this nice blog of Devgirl](http://devgirl.org/2013/07/17/tutorial-how-to-write-a-phonegap-plugin-for-android/).
 * Credits for the original iOS code go to [Felix Montanez](https://github.com/felixactv8/Phonegap-Calendar-Plugin-ios).
 * Credits for the original Android code go to [Ten Forward Consulting](https://github.com/tenforwardconsulting/Phonegap-Calendar-Plugin-android) and [twistandshout](https://github.com/twistandshout/phonegap-calendar-plugin).
