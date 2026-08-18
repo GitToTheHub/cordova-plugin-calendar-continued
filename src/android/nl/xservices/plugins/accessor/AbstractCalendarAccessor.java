@@ -600,7 +600,7 @@ public abstract class AbstractCalendarAccessor {
                               Integer calendarId, String url) {
         ContentResolver cr = this.cordova.getActivity().getContentResolver();
         ContentValues values = new ContentValues();
-        final boolean allDayEvent = "true".equals(allday) && isAllDayEvent(new Date(startTime), new Date(endTime));
+        final boolean allDayEvent = isAllDayEvent(new Date(startTime), new Date(endTime));
         if (allDayEvent) {
             //all day events must be in UTC time zone per Android specification, getOffset accounts for daylight savings time
             values.put(Events.EVENT_TIMEZONE, "UTC");
@@ -773,6 +773,18 @@ public abstract class AbstractCalendarAccessor {
     }
 
     public static boolean isAllDayEvent(final Date startDate, final Date endDate) {
-        return ((endDate.getTime() - startDate.getTime()) % (24 * 60 * 60 * 1000) == 0);
+        final java.util.Calendar startCalendar = java.util.Calendar.getInstance();
+        startCalendar.setTime(startDate);
+        final java.util.Calendar endCalendar = java.util.Calendar.getInstance();
+        endCalendar.setTime(endDate);
+
+        return isMidnight(startCalendar) && isMidnight(endCalendar) && endCalendar.after(startCalendar);
+    }
+
+    private static boolean isMidnight(final java.util.Calendar calendar) {
+        return calendar.get(java.util.Calendar.HOUR_OF_DAY) == 0
+            && calendar.get(java.util.Calendar.MINUTE) == 0
+            && calendar.get(java.util.Calendar.SECOND) == 0
+            && calendar.get(java.util.Calendar.MILLISECOND) == 0;
     }
 }

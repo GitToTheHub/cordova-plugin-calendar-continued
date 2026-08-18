@@ -80,7 +80,7 @@ Calendar.prototype.getCalendarOptions = function () {
     recurrenceByMonthDay: null, // Android only: RRULE BYMONTHDAY value, example: '15'
     recurrenceEndDate: null, // example: new Date(2027, 10, 1)
     recurrenceCount: null, // Android only: RRULE COUNT value, example: 5
-    allday: null, // Android only: set true for all-day events with a whole-day duration
+    allday: null, // Android only: Deprecated set true for all-day events with a whole-day duration
     calendarName: null, // iOS only
     calendarId: null, // Android only
     url: null
