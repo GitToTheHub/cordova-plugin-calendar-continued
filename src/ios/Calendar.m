@@ -492,21 +492,23 @@
 
 #pragma mark Cordova functions
 
-- (void) openCalendar:(CDVInvokedUrlCommand*)command {
-  NSDictionary* options = [command.arguments objectAtIndex:0];
-  NSNumber* date = [options objectForKey:@"date"];
+- (void) openCalendar:(CDVInvokedUrlCommand *)command {
+  NSDictionary *options = [command.arguments objectAtIndex:0];
+  NSNumber *date = [options objectForKey:@"date"];
+  // JavaScript dates are Unix milliseconds, while calshow expects seconds since Apple's 2001 reference date.
+  NSInteger secondsSinceReferenceDate = ([date doubleValue] / 1000) - NSTimeIntervalSince1970;
 
-  [self.commandDelegate runInBackground: ^{
-    NSTimeInterval _startInterval = [date doubleValue] / 1000; // strip millis
-    NSDate *openDate = [NSDate dateWithTimeIntervalSince1970:_startInterval];
-    NSInteger interval = [openDate timeIntervalSinceReferenceDate];
-
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"calshow:%ld", interval]];
-    [[UIApplication sharedApplication] openURL:url
-                                       options:@{}
-                             completionHandler:^(BOOL success) {
-      
-    }];
+  NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"calshow:%ld", secondsSinceReferenceDate]];
+  [[UIApplication sharedApplication] openURL:url
+                                     options:@{}
+                           completionHandler:^(BOOL success) {
+    CDVPluginResult *pluginResult = nil;
+    if (success) {
+      pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+      pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Unable to open calendar"];
+    }
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
   }];
 }
 
