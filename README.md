@@ -313,58 +313,19 @@ window.plugins.calendar.createEventWithOptions(
 
 ##### Create All-Day Event
 
-On iOS, an event is treated as all-day when the date range covers full days from midnight to midnight. On Android, set `options.allday = true`; for silent event creation Android also checks that the event duration is a whole number of days. Use midnight-to-midnight dates to avoid timezone surprises.
+On iOS and Android, an event is treated as all-day when the date range runs from local midnight to local midnight on a later day. `new Date(year, month, day)` creates a date at local midnight, so no additional zero arguments or options are needed, example:
 
 ```js
-// Set the start date to midnight and the end date to midnight the next day.
-const startDate = new Date(2027, 2, 15, 0, 0, 0, 0, 0)
-const endDate = new Date(2027, 2, 16, 0, 0, 0, 0, 0)
-
-const options = window.plugins.calendar.getCalendarOptions()
-// Android only: mark this event as all-day.
-options.allday = true
-
-window.plugins.calendar.createEventWithOptions(
-  "My all-day event",
-  "Home",
-  "Some notes about this event.",
-  startDate,
-  endDate,
-  options,
-  () => {
-    console.log("All-day event created")
-  },
-  (errorMessage) => {
-    console.error(`Error creating all-day event, errorMessage=${errorMessage}`)
-  }
-)
+const startDate = new Date(2027, 2, 15)
+const endDate = new Date(2027, 2, 16)
 ```
 
 ##### Create Multi-Day All-Day Event
 
 ```js
-// Set the start date to midnight and the end date to midnight 3 days later.
-const startDate = new Date(2027, 2, 24, 0, 0, 0, 0, 0)
-const endDate = new Date(2027, 2, 27, 0, 0, 0, 0, 0)
+const startDate = new Date(2027, 2, 24)
+const endDate = new Date(2027, 2, 27)
 
-const options = window.plugins.calendar.getCalendarOptions()
-// Android only: mark this event as all-day.
-options.allday = true
-
-window.plugins.calendar.createEventWithOptions(
-  "My 3-day event",
-  "Home",
-  "Some notes about this event.",
-  startDate,
-  endDate,
-  options,
-  () => {
-    console.log("3-day event created")
-  },
-  (errorMessage) => {
-    console.error(`Error creating 3-day event, errorMessage=${errorMessage}`)
-  }
-)
 ```
 
 ##### Get Calendar Options
@@ -391,7 +352,7 @@ Start with this object and override only the properties you need. The JavaScript
 | `recurrenceByMonthDay` | `null` | Android only | RRULE `BYMONTHDAY` value, for example `15`. Supported by silent event creation only. |
 | `recurrenceEndDate` | `null` | Android, iOS | JavaScript `Date` at which the recurrence ends. Leave `null` for no end date. |
 | `recurrenceCount` | `null` | Android only | RRULE `COUNT` value, for example `5` to repeat 5 times. Supported by silent event creation only. |
-| `allday` | `null` | Android only | Set to `true` for an all-day event. For silent event creation, Android also checks that the event duration is a whole number of days. Use midnight-to-midnight dates to avoid timezone surprises. iOS ignores this option and detects all-day events from the date range. |
+| `allday` | `null` | Android only | Deprecated. Android detects all-day events from a local-midnight-to-local-midnight date range; iOS does the same. Since version 5.2.1. |
 | `calendarName` | `null` | iOS | Selects the calendar by name or identifier. If omitted, iOS uses the default calendar for new events. Android ignores this for event creation. |
 | `calendarId` | `null` | Android | Selects the Android calendar id. If omitted during event creation, Android defaults to `1`. iOS ignores this. |
 | `url` | `null` | Android, iOS | Adds a URL to the event. iOS stores it as the event URL. Android appends it to the event notes because Android calendar events do not expose the same URL field. |
