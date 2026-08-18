@@ -74,15 +74,15 @@ Calendar.prototype.getCalendarOptions = function () {
     firstReminderMinutes: 60,
     secondReminderMinutes: null,
     recurrence: null, // options are: 'daily', 'weekly', 'monthly', 'yearly'
-    recurrenceInterval: 1, // only used when recurrence is set
-    recurrenceWeekstart: "MO",
-    recurrenceByDay: null,
-    recurrenceByMonthDay: null,
-    recurrenceEndDate: null,
-    recurrenceCount: null,
-    accountName: null, // Android only, the account name to create the event under
-    calendarName: null,
-    calendarId: null,
+    recurrenceInterval: 1, // example: 2 with recurrence 'monthly' means every 2 months
+    recurrenceWeekstart: "MO", // Android only: RRULE WKST value, example: 'MO' or 'SU'
+    recurrenceByDay: null, // Android only: RRULE BYDAY value, example: 'MO,WE,FR'
+    recurrenceByMonthDay: null, // Android only: RRULE BYMONTHDAY value, example: '15'
+    recurrenceEndDate: null, // example: new Date(2027, 10, 1)
+    recurrenceCount: null, // Android only: RRULE COUNT value, example: 5
+    allday: null, // Android only: set true for all-day events with a whole-day duration
+    calendarName: null, // iOS only
+    calendarId: null, // Android only
     url: null
   };
 };
